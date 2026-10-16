@@ -12,6 +12,18 @@ HTML / CSS / JavaScript だけの静的 Web アプリ（ビルド不要・外部
 - スマホ・ブラウザ用: <https://sasekazu.github.io/class-clock/>
 - Mac の小窓（コンパクト表示）用: <https://sasekazu.github.io/class-clock/?mode=compact>
 
+## 表示例
+
+画面サイズ・時刻を指定して描画した例です（`?now=` で時刻を固定。実機の画面写真ではありません）。
+
+**Mac（コンパクト表示 `?mode=compact`、285×70 px）**
+
+![Mac コンパクト表示の例](docs/images/compact.png)
+
+**スマホ（縦画面）**
+
+![スマホ表示の例](docs/images/mobile.png)
+
 ## 表示の見かた
 
 | 状態 | 中央の大きな数字 | 色 |
