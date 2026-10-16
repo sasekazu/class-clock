@@ -12,6 +12,7 @@
   "use strict";
 
   var S = window.ClassClockSchedule;
+  var SVGNS = "http://www.w3.org/2000/svg";
   var WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
   // ---- time source (real clock, or ?now= for debugging) --------------------
@@ -88,6 +89,74 @@
     if (document.body.getAttribute(attr) !== value) document.body.setAttribute(attr, value);
   }
 
+  // ---- ring: a gap every 30 minutes (mobile) -----------------------------------
+
+  var RING_STEP_MIN = 30;
+  var ringTicks = document.getElementById("ring-ticks");
+  var ticksFor = null;
+
+  /** Cut the ring into 30-minute arcs: a 90-minute class becomes three arcs. */
+  function setRingTicks(totalMin) {
+    if (ticksFor === totalMin) return;
+    ticksFor = totalMin;
+    while (ringTicks.firstChild) ringTicks.removeChild(ringTicks.firstChild);
+    if (!totalMin) return;
+    for (var m = 0; m < totalMin; m += RING_STEP_MIN) {
+      var tick = document.createElementNS(SVGNS, "line");
+      tick.setAttribute("x1", 170); tick.setAttribute("y1", 100);
+      tick.setAttribute("x2", 200); tick.setAttribute("y2", 100);
+      tick.setAttribute("class", "ring-tick");
+      // the whole svg is turned -90deg in CSS, so angle 0 is 12 o'clock
+      tick.setAttribute("transform", "rotate(" + (360 * m / totalMin) + " 100 100)");
+      ringTicks.appendChild(tick);
+    }
+  }
+
+  // ---- day timeline (mobile) ---------------------------------------------------
+
+  var dayTl = document.querySelector("#day .tl");
+  var dayLabels = document.querySelector("#day .tl-labels");
+  var DAY_START = S.PERIODS[0].start;
+  var DAY_END = S.PERIODS[S.PERIODS.length - 1].end;
+  var dayPct = function (min) { return ((min - DAY_START) / (DAY_END - DAY_START)) * 100; };
+
+  var daySegs = S.PERIODS.map(function (p) {
+    var seg = document.createElement("div");
+    seg.className = "seg future";
+    seg.style.left = dayPct(p.start) + "%";
+    seg.style.width = dayPct(p.end) - dayPct(p.start) + "%";
+    var fill = document.createElement("i");
+    seg.appendChild(fill);
+    dayTl.appendChild(seg);
+
+    var label = document.createElement("span");
+    label.textContent = p.n;
+    label.style.left = (dayPct(p.start) + dayPct(p.end)) / 2 + "%";
+    dayLabels.appendChild(label);
+    return { p: p, seg: seg, fill: fill, label: label, state: "future" };
+  });
+  var dayNow = document.createElement("div");
+  dayNow.className = "now";
+  dayTl.appendChild(dayNow);
+
+  function renderDay(st) {
+    var t = st.time;
+    var nowMin = t.h * 60 + t.mi + t.s / 60;
+    daySegs.forEach(function (d) {
+      var state = !st.schoolDay ? "future" : nowMin >= d.p.end ? "past" : nowMin >= d.p.start ? "cur" : "future";
+      if (d.state !== state) {
+        d.state = state;
+        d.seg.className = "seg " + state;
+        d.label.className = state === "cur" ? "cur" : "";
+      }
+      if (state === "cur") d.fill.style.width = (((nowMin - d.p.start) / (d.p.end - d.p.start)) * 100).toFixed(2) + "%";
+      else if (d.fill.style.width) d.fill.style.width = "";
+    });
+    var visible = st.schoolDay && nowMin >= DAY_START && nowMin <= DAY_END;
+    dayNow.style.display = visible ? "" : "none";
+    if (visible) dayNow.style.left = dayPct(nowMin).toFixed(3) + "%";
+  }
+
   // ---- render --------------------------------------------------------------
 
   function render() {
@@ -102,6 +171,8 @@
     var scale = "scaleX(" + p.toFixed(4) + ")";
     bars.forEach(function (bar) { bar.style.transform = scale; });
     ring.setAttribute("stroke-dasharray", (p * 100).toFixed(2) + " 100"); // ring is pathLength=100
+    setRingTicks(st.endMin === null ? 0 : st.endMin - st.startMin);
+    renderDay(st);
   }
 
   // Re-render on every whole second (just after the boundary).

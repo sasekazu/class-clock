@@ -6,7 +6,7 @@
  *   - sizes:    --c-* (compact) and --m-* (mobile). They are plain numbers in
  *               "design pixels"; --u converts one design pixel to real pixels,
  *               so each layout scales with its window.
- *               Compact is designed on a 285 x 70 canvas, mobile on 390 wide, at least ~560 tall.
+ *               Compact is designed on a 285 x 70 canvas, mobile on 390 wide, at least ~640 tall.
  */
 
 /* ---------- palette ---------- */
@@ -52,14 +52,16 @@
   --m-date-size: 16;
   --m-offinfo-size: 18;
   --m-off-clock-size: 88; /* HH:mm outside class hours (no ring) */
+  --m-day-h: 10;          /* thickness of the whole-day bar */
+  --m-day-label-size: 14; /* period numbers under the whole-day bar */
   --m-btn-size: 16;
 }
 
 /* design pixel -> real pixels */
 html[data-layout="compact"] { --u: min(calc(100vw / 285), calc(100vh / 70)); }
-html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100vh / 560), 1.7px); }
+html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100vh / 640), 1.7px); }
 @supports (height: 100dvh) {
-  html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100dvh / 560), 1.7px); }
+  html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100dvh / 640), 1.7px); }
 }
 
 /* ---------- state colour ---------- */
@@ -157,6 +159,7 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
 .ring-track, .ring-fill { fill: none; stroke-width: 18; }
 .ring-track { stroke: var(--faint); }
 .ring-fill { stroke: var(--accent); }
+.ring-tick { stroke: var(--bg); stroke-width: 3.5; } /* 30-minute dividers */
 .m-ring-text {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -181,9 +184,25 @@ body[data-phase="off"] .m-clock { font-size: calc(var(--u) * var(--m-off-clock-s
 body[data-phase="off"] .m-sec { font-size: calc(var(--u) * var(--m-off-clock-size) * 0.36); }
 body[data-phase="off"] .m-offinfo { display: block; }
 
+/* whole school day (one segment per period) */
+.m-day { padding: 0 calc(var(--u) * 2); }
+.tl { position: relative; height: calc(var(--u) * var(--m-day-h)); }
+.tl .seg { position: absolute; top: 0; height: 100%; border-radius: 99px; background: var(--faint); overflow: hidden; }
+.tl .seg i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--c-class); }
+.tl .seg.past i { width: 100%; opacity: .45; }
+.tl .seg.cur i { background: var(--accent); }
+.tl .now {
+  position: absolute; top: calc(var(--u) * -6); bottom: calc(var(--u) * -6);
+  width: calc(var(--u) * 3); margin-left: calc(var(--u) * -1.5);
+  background: var(--fg); border-radius: 2px;
+}
+.tl-labels { position: relative; height: 1.3em; margin-top: calc(var(--u) * 9); font-size: calc(var(--u) * var(--m-day-label-size)); color: var(--dim); }
+.tl-labels span { position: absolute; transform: translateX(-50%); }
+.tl-labels span.cur { color: var(--fg); font-weight: 600; }
+
 .wake {
   display: block; width: 100%;
-  margin-top: calc(var(--u) * 22);
+  margin-top: calc(var(--u) * 16);
   padding: calc(var(--u) * 13) 0;
   font: inherit; font-size: calc(var(--u) * var(--m-btn-size));
   color: var(--dim); background: transparent;
