@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<title>ClassClock</title>
+<link rel="stylesheet" href="css/style.css">
+<!-- Picks the layout (compact / mobile) before first paint. ?mode=compact|mobile forces one. -->
+<script src="js/layout.js"></script>
+</head>
+<body data-phase="off" data-state="off">
+
+  <!-- Compact layout: ~285x70 always-on-top window on the Mac (?mode=compact) -->
+  <main id="compact" class="compact" aria-label="ClassClock コンパクト表示">
+    <div class="c-row">
+      <div class="c-clock" data-bind="clock">--:--</div>
+      <div class="c-center">
+        <div class="c-remain">
+          <span class="c-num" data-bind="remain">--</span><span class="c-unit">分</span>
+        </div>
+        <div class="c-offclock" data-bind="clock">--:--</div>
+      </div>
+      <div class="c-info">
+        <div class="c-title" data-bind="title">&nbsp;</div>
+        <div class="c-sub" data-bind="sub">&nbsp;</div>
+      </div>
+    </div>
+    <div class="bar"><i data-bind-progress></i></div>
+  </main>
+
+  <!-- Mobile layout: portrait phone -->
+  <main id="mobile" class="mobile" aria-label="ClassClock スマートフォン表示">
+    <header class="m-head">
+      <div class="m-title" data-bind="title">&nbsp;</div>
+      <div class="m-range" data-bind="range">&nbsp;</div>
+    </header>
+
+    <section class="m-body">
+      <svg id="analog" class="analog" viewBox="-100 -100 200 200" role="img" aria-label="アナログ時計（日本時間）"></svg>
+      <div class="m-digital">
+        <div class="m-date" data-bind="date">&nbsp;</div>
+        <div class="m-clock" data-bind="clock">--:--</div>
+        <div class="m-remainblock">
+          <div class="m-remain-label" data-bind="remainLabel">&nbsp;</div>
+          <div class="m-remain"><span class="m-num" data-bind="remain">--</span><span class="m-unit">分</span></div>
+        </div>
+        <div class="m-offinfo" data-bind="sub">&nbsp;</div>
+      </div>
+    </section>
+
+    <section class="m-foot">
+      <div class="bar"><i data-bind-progress></i></div>
+      <div class="m-times"><span data-bind="startText">&nbsp;</span><span data-bind="endText">&nbsp;</span></div>
+      <button id="wake-btn" class="wake" type="button" aria-pressed="false">画面を点灯したままにする</button>
+      <p id="wake-msg" class="wake-msg" role="status"></p>
+    </section>
+  </main>
+
+  <noscript><p style="padding:16px;color:#ccc">ClassClock の表示には JavaScript が必要です。</p></noscript>
+
+<script src="js/schedule.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

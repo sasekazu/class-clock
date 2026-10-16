@@ -1,0 +1,203 @@
+/*
+ * ClassClock styles.
+ *
+ * Tweak the look from the two "tuning" blocks below:
+ *   - colours:  the palette block
+ *   - sizes:    --c-* (compact) and --m-* (mobile). They are plain numbers in
+ *               "design pixels"; --u converts one design pixel to real pixels,
+ *               so each layout scales with its window.
+ *               Compact is designed on a 285 x 70 canvas, mobile on 390 wide, at least ~560 tall.
+ */
+
+/* ---------- palette ---------- */
+:root {
+  --bg: #000;
+  --fg: #f2f2f2;
+  --dim: #9a9a9a;
+  --faint: #2a2a2a;
+
+  --c-class: #4fd1c5;  /* in class */
+  --c-warn: #ff8a3d;   /* 5 minutes or less left */
+  --c-break: #7fb2ff;  /* break between classes */
+  --c-off: #f2f2f2;    /* outside class hours */
+  --c-second: #ff5a4d; /* analog second hand */
+
+  --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
+          "Noto Sans JP", "Yu Gothic", "Segoe UI", Roboto, sans-serif;
+}
+
+/* ---------- sizes: compact (Mac small window) ---------- */
+:root {
+  --c-pad-x: 9;       /* left/right padding */
+  --c-left-w: 76;     /* current-time column */
+  --c-right-w: 96;    /* period / end-time column */
+  --c-clock-size: 21; /* HH:mm on the left */
+  --c-num-size: 50;   /* remaining minutes (the main number) */
+  --c-unit-size: 14;  /* "分" */
+  --c-title-size: 16; /* "3校時" */
+  --c-sub-size: 12;   /* "〜14:45" */
+  --c-bar-h: 4;       /* progress bar thickness */
+}
+
+/* ---------- sizes: mobile (portrait phone) ---------- */
+:root {
+  --m-pad: 20;
+  --m-title-size: 46;
+  --m-range-size: 21;
+  --m-analog-size: 176;
+  --m-date-size: 15;
+  --m-clock-size: 46;
+  --m-label-size: 15;
+  --m-num-size: 88;
+  --m-unit-size: 24;
+  --m-offinfo-size: 17;
+  --m-bar-h: 10;
+  --m-times-size: 19;
+  --m-btn-size: 16;
+}
+
+/* design pixel -> real pixels */
+html[data-layout="compact"] { --u: min(calc(100vw / 285), calc(100vh / 70)); }
+html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100vh / 560), 1.7px); }
+@supports (height: 100dvh) {
+  html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100dvh / 560), 1.7px); }
+}
+
+/* ---------- state colour ---------- */
+body { --accent: var(--c-off); }
+body[data-state="class"] { --accent: var(--c-class); }
+body[data-state="warn"] { --accent: var(--c-warn); }
+body[data-state="break"] { --accent: var(--c-break); }
+
+/* ---------- base ---------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: var(--bg); color: var(--fg); }
+body {
+  font-family: var(--font);
+  font-variant-numeric: tabular-nums;
+  -webkit-text-size-adjust: 100%;
+  overflow: hidden;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+html:not([data-layout]) main { visibility: hidden; }
+html[data-layout="compact"] #mobile,
+html[data-layout="mobile"] #compact { display: none; }
+
+.bar { position: relative; background: var(--faint); overflow: hidden; }
+.bar i {
+  position: absolute; inset: 0;
+  background: var(--accent);
+  transform: scaleX(0); transform-origin: left center;
+}
+body[data-phase="off"] .bar i { display: none; }
+
+/* ======================================================================
+   Compact layout  (?mode=compact, ~285 x 70)
+   ====================================================================== */
+.compact { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+.c-row {
+  flex: 1 1 auto; min-height: 0;
+  display: grid;
+  grid-template-columns: calc(var(--u) * var(--c-left-w)) 1fr calc(var(--u) * var(--c-right-w));
+  align-items: center;
+  padding: 0 calc(var(--u) * var(--c-pad-x));
+  white-space: nowrap;
+}
+.compact .bar { flex: none; height: calc(var(--u) * var(--c-bar-h)); }
+
+.c-clock {
+  font-size: calc(var(--u) * var(--c-clock-size));
+  font-weight: 500; color: var(--fg); line-height: 1;
+}
+.c-center { text-align: center; line-height: 1; min-width: 0; }
+.c-remain { color: var(--accent); }
+.c-num { font-size: calc(var(--u) * var(--c-num-size)); font-weight: 600; letter-spacing: -0.02em; line-height: 1; }
+.c-unit { font-size: calc(var(--u) * var(--c-unit-size)); font-weight: 500; margin-left: calc(var(--u) * 2); }
+.c-offclock { display: none; font-size: calc(var(--u) * var(--c-num-size) * 0.92); font-weight: 500; letter-spacing: -0.02em; }
+.c-info { text-align: right; min-width: 0; line-height: 1.2; }
+.c-title { font-size: calc(var(--u) * var(--c-title-size)); font-weight: 600; color: var(--fg); }
+.c-sub { font-size: calc(var(--u) * var(--c-sub-size)); color: var(--dim); margin-top: calc(var(--u) * 2); }
+body[data-state="warn"] .c-sub { color: var(--c-warn); }
+
+/* outside class hours: the clock takes the centre, the left column is dropped */
+body[data-phase="off"] .c-clock,
+body[data-phase="off"] .c-remain { visibility: hidden; }
+body[data-phase="off"] .c-remain { display: none; }
+body[data-phase="off"] .c-offclock { display: block; }
+body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr calc(var(--u) * var(--c-right-w)); }
+
+/* ======================================================================
+   Mobile layout  (portrait phone)
+   ====================================================================== */
+.mobile {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh; height: 100dvh;
+  width: min(100vw, calc(var(--u) * 480));
+  margin: 0 auto;
+  padding: calc(var(--u) * var(--m-pad));
+  padding-top: max(calc(var(--u) * var(--m-pad)), env(safe-area-inset-top));
+  padding-bottom: max(calc(var(--u) * var(--m-pad)), env(safe-area-inset-bottom));
+}
+
+.m-head { line-height: 1.1; }
+.m-title { font-size: calc(var(--u) * var(--m-title-size)); font-weight: 700; color: var(--fg); }
+.m-range { font-size: calc(var(--u) * var(--m-range-size)); color: var(--dim); margin-top: calc(var(--u) * 6); }
+
+.m-body {
+  display: grid;
+  grid-template-columns: calc(var(--u) * var(--m-analog-size)) 1fr;
+  align-items: center;
+  gap: calc(var(--u) * 14);
+}
+.analog { width: calc(var(--u) * var(--m-analog-size)); height: calc(var(--u) * var(--m-analog-size)); display: block; }
+.a-rim { fill: none; stroke: #3a3a3a; stroke-width: 2.5; }
+.a-tick { stroke: #666; stroke-width: 1.2; stroke-linecap: round; }
+.a-tick-major { stroke: var(--fg); stroke-width: 3; }
+.a-num { fill: var(--fg); font: 600 17px var(--font); text-anchor: middle; dominant-baseline: central; }
+.a-hand { stroke-linecap: round; }
+.a-hour { stroke: var(--fg); stroke-width: 6; }
+.a-minute { stroke: var(--fg); stroke-width: 4; }
+.a-second { stroke: var(--c-second); stroke-width: 1.8; }
+.a-hub { fill: var(--c-second); }
+
+.m-digital { min-width: 0; line-height: 1; }
+.m-date { font-size: calc(var(--u) * var(--m-date-size)); color: var(--dim); }
+.m-clock { font-size: calc(var(--u) * var(--m-clock-size)); font-weight: 500; margin-top: calc(var(--u) * 6); letter-spacing: -0.01em; }
+.m-remainblock { margin-top: calc(var(--u) * 18); color: var(--accent); }
+.m-remain-label { font-size: calc(var(--u) * var(--m-label-size)); color: var(--dim); }
+.m-remain { white-space: nowrap; margin-top: calc(var(--u) * 2); }
+.m-num { font-size: calc(var(--u) * var(--m-num-size)); font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.m-unit { font-size: calc(var(--u) * var(--m-unit-size)); font-weight: 500; margin-left: calc(var(--u) * 3); }
+.m-offinfo { display: none; font-size: calc(var(--u) * var(--m-offinfo-size)); color: var(--dim); margin-top: calc(var(--u) * 16); line-height: 1.4; }
+body[data-state="warn"] .m-remain-label { color: var(--c-warn); }
+
+body[data-phase="off"] .m-remainblock { display: none; }
+body[data-phase="off"] .m-offinfo { display: block; }
+
+
+.m-foot .bar { height: calc(var(--u) * var(--m-bar-h)); border-radius: 99px; }
+.m-times {
+  display: flex; justify-content: space-between;
+  font-size: calc(var(--u) * var(--m-times-size)); color: var(--dim);
+  margin-top: calc(var(--u) * 8);
+  min-height: 1.2em;
+}
+
+.wake {
+  display: block; width: 100%;
+  margin-top: calc(var(--u) * 22);
+  padding: calc(var(--u) * 13) 0;
+  font: inherit; font-size: calc(var(--u) * var(--m-btn-size));
+  color: var(--dim); background: transparent;
+  border: 1px solid #3a3a3a; border-radius: calc(var(--u) * 12);
+  cursor: pointer;
+}
+.wake[aria-pressed="true"] { color: var(--c-class); border-color: var(--c-class); }
+.wake:disabled { opacity: .55; cursor: default; }
+.wake-msg {
+  margin: calc(var(--u) * 8) 0 0; min-height: 1.4em;
+  font-size: calc(var(--u) * 13); line-height: 1.4; color: var(--dim);
+}
