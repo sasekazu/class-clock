@@ -116,11 +116,15 @@
 
   var dayTl = document.querySelector("#day .tl");
   var dayLabels = document.querySelector("#day .tl-labels");
-  var DAY_START = S.PERIODS[0].start;
-  var DAY_END = S.PERIODS[S.PERIODS.length - 1].end;
+  // Only periods 1-5 are drawn in the bar (6th/7th are not shown). The clock, countdown
+  // and ring still handle them; the bar just stays "all done" once period 5 is over.
+  var DAY_BAR_LAST_PERIOD = 5;
+  var DAY_PERIODS = S.PERIODS.filter(function (p) { return p.n <= DAY_BAR_LAST_PERIOD; });
+  var DAY_START = DAY_PERIODS[0].start;
+  var DAY_END = DAY_PERIODS[DAY_PERIODS.length - 1].end;
   var dayPct = function (min) { return ((min - DAY_START) / (DAY_END - DAY_START)) * 100; };
 
-  var daySegs = S.PERIODS.map(function (p) {
+  var daySegs = DAY_PERIODS.map(function (p) {
     var seg = document.createElement("div");
     seg.className = "seg future";
     seg.style.left = dayPct(p.start) + "%";
