@@ -20,7 +20,6 @@
   --c-warn: #ff8a3d;   /* 5 minutes or less left */
   --c-break: #7fb2ff;  /* break between classes */
   --c-off: #f2f2f2;    /* outside class hours */
-  --c-second: #ff5a4d; /* analog second hand */
 
   --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
           "Noto Sans JP", "Yu Gothic", "Segoe UI", Roboto, sans-serif;
@@ -44,15 +43,15 @@
   --m-pad: 20;
   --m-title-size: 46;
   --m-range-size: 21;
-  --m-analog-size: 176;
-  --m-date-size: 15;
-  --m-clock-size: 46;
-  --m-label-size: 15;
-  --m-num-size: 88;
-  --m-unit-size: 24;
-  --m-offinfo-size: 17;
-  --m-bar-h: 10;
-  --m-times-size: 19;
+  --m-ring-size: 250;     /* diameter of the progress ring */
+  --m-label-size: 16;     /* "終了まで" inside the ring */
+  --m-num-size: 92;       /* remaining minutes inside the ring */
+  --m-unit-size: 24;      /* "分" */
+  --m-clock-size: 52;     /* HH:mm */
+  --m-sec-size: 22;       /* :ss (small) */
+  --m-date-size: 16;
+  --m-offinfo-size: 18;
+  --m-off-clock-size: 88; /* HH:mm outside class hours (no ring) */
   --m-btn-size: 16;
 }
 
@@ -147,44 +146,40 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
 .m-range { font-size: calc(var(--u) * var(--m-range-size)); color: var(--dim); margin-top: calc(var(--u) * 6); }
 
 .m-body {
-  display: grid;
-  grid-template-columns: calc(var(--u) * var(--m-analog-size)) 1fr;
-  align-items: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: calc(var(--u) * 14);
+  min-height: 0; line-height: 1; text-align: center;
 }
-.analog { width: calc(var(--u) * var(--m-analog-size)); height: calc(var(--u) * var(--m-analog-size)); display: block; }
-.a-rim { fill: none; stroke: #3a3a3a; stroke-width: 2.5; }
-.a-tick { stroke: #666; stroke-width: 1.2; stroke-linecap: round; }
-.a-tick-major { stroke: var(--fg); stroke-width: 3; }
-.a-num { fill: var(--fg); font: 600 17px var(--font); text-anchor: middle; dominant-baseline: central; }
-.a-hand { stroke-linecap: round; }
-.a-hour { stroke: var(--fg); stroke-width: 6; }
-.a-minute { stroke: var(--fg); stroke-width: 4; }
-.a-second { stroke: var(--c-second); stroke-width: 1.8; }
-.a-hub { fill: var(--c-second); }
 
-.m-digital { min-width: 0; line-height: 1; }
-.m-date { font-size: calc(var(--u) * var(--m-date-size)); color: var(--dim); }
-.m-clock { font-size: calc(var(--u) * var(--m-clock-size)); font-weight: 500; margin-top: calc(var(--u) * 6); letter-spacing: -0.01em; }
-.m-remainblock { margin-top: calc(var(--u) * 18); color: var(--accent); }
+/* progress ring: elapsed share drawn clockwise from 12 o'clock */
+.m-ring { position: relative; width: calc(var(--u) * var(--m-ring-size)); height: calc(var(--u) * var(--m-ring-size)); flex: none; }
+.ring { width: 100%; height: 100%; display: block; transform: rotate(-90deg); }
+.ring-track, .ring-fill { fill: none; stroke-width: 18; }
+.ring-track { stroke: var(--faint); }
+.ring-fill { stroke: var(--accent); }
+.m-ring-text {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  color: var(--accent);
+}
 .m-remain-label { font-size: calc(var(--u) * var(--m-label-size)); color: var(--dim); }
-.m-remain { white-space: nowrap; margin-top: calc(var(--u) * 2); }
+.m-remain { white-space: nowrap; margin-top: calc(var(--u) * 4); }
 .m-num { font-size: calc(var(--u) * var(--m-num-size)); font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
 .m-unit { font-size: calc(var(--u) * var(--m-unit-size)); font-weight: 500; margin-left: calc(var(--u) * 3); }
-.m-offinfo { display: none; font-size: calc(var(--u) * var(--m-offinfo-size)); color: var(--dim); margin-top: calc(var(--u) * 16); line-height: 1.4; }
 body[data-state="warn"] .m-remain-label { color: var(--c-warn); }
 
-body[data-phase="off"] .m-remainblock { display: none; }
+/* digital clock with small seconds */
+.m-time { white-space: nowrap; }
+.m-clock { font-size: calc(var(--u) * var(--m-clock-size)); font-weight: 500; letter-spacing: -0.01em; }
+.m-sec { font-size: calc(var(--u) * var(--m-sec-size)); font-weight: 500; color: var(--dim); margin-left: calc(var(--u) * 5); }
+.m-date { font-size: calc(var(--u) * var(--m-date-size)); color: var(--dim); }
+.m-offinfo { display: none; font-size: calc(var(--u) * var(--m-offinfo-size)); color: var(--dim); line-height: 1.4; }
+
+/* outside class hours: no ring, the clock is the centre of the screen */
+body[data-phase="off"] .m-ring { display: none; }
+body[data-phase="off"] .m-clock { font-size: calc(var(--u) * var(--m-off-clock-size)); }
+body[data-phase="off"] .m-sec { font-size: calc(var(--u) * var(--m-off-clock-size) * 0.36); }
 body[data-phase="off"] .m-offinfo { display: block; }
-
-
-.m-foot .bar { height: calc(var(--u) * var(--m-bar-h)); border-radius: 99px; }
-.m-times {
-  display: flex; justify-content: space-between;
-  font-size: calc(var(--u) * var(--m-times-size)); color: var(--dim);
-  margin-top: calc(var(--u) * 8);
-  min-height: 1.2em;
-}
 
 .wake {
   display: block; width: 100%;

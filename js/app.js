@@ -13,7 +13,6 @@
 
   var S = window.ClassClockSchedule;
   var WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
-  var SVGNS = "http://www.w3.org/2000/svg";
 
   // ---- time source (real clock, or ?now= for debugging) --------------------
 
@@ -42,8 +41,9 @@
     var t = st.time;
     var v = {
       clock: st.clock,
+      sec: String(t.s).padStart(2, "0"), // shown small, mobile layout only
       date: t.mo + "/" + t.d + " (" + WEEKDAYS[t.wd] + ")",
-      title: "", sub: "", range: "", remain: "", remainLabel: "", startText: "", endText: "",
+      title: "", sub: "", range: "", remain: "", remainLabel: "",
     };
 
     if (st.phase === "class") {
@@ -52,16 +52,12 @@
       v.range = minutesText(st.startMin) + " – " + minutesText(st.endMin);
       v.remainLabel = "終了まで";
       v.remain = String(st.remainingMin);
-      v.startText = minutesText(st.startMin);
-      v.endText = minutesText(st.endMin);
     } else if (st.phase === "break") {
       v.title = "休み時間";
       v.sub = periodName(st.next) + " " + minutesText(st.endMin) + "〜";
       v.range = "次は " + periodName(st.next) + " " + minutesText(st.endMin) + "〜";
       v.remainLabel = periodName(st.next) + "まで";
       v.remain = String(st.remainingMin);
-      v.startText = minutesText(st.startMin);
-      v.endText = minutesText(st.endMin);
     } else {
       v.title = st.offReason === "weekend" || st.offReason === "holiday" ? "休日" : "授業時間外";
       if (st.offReason === "before") v.sub = "次 " + periodName(st.next) + " " + minutesText(st.next.start) + "〜";
@@ -79,6 +75,7 @@
     (bound[el.getAttribute("data-bind")] = bound[el.getAttribute("data-bind")] || []).push(el);
   });
   var bars = Array.prototype.slice.call(document.querySelectorAll("[data-bind-progress]"));
+  var ring = document.querySelector("[data-bind-ring]");
   var cache = {};
 
   function setText(name, value) {
@@ -89,57 +86,6 @@
 
   function setBody(attr, value) {
     if (document.body.getAttribute(attr) !== value) document.body.setAttribute(attr, value);
-  }
-
-  // ---- analog clock (mobile) -----------------------------------------------
-
-  function svg(name, attrs) {
-    var el = document.createElementNS(SVGNS, name);
-    for (var k in attrs) el.setAttribute(k, attrs[k]);
-    return el;
-  }
-
-  function buildAnalog(root) {
-    root.appendChild(svg("circle", { r: 96, class: "a-rim" }));
-    for (var i = 0; i < 60; i++) {
-      var major = i % 5 === 0;
-      var a = (i * 6 * Math.PI) / 180;
-      var r1 = 90;
-      var r2 = r1 - (major ? 9 : 4);
-      root.appendChild(svg("line", {
-        x1: Math.sin(a) * r1, y1: -Math.cos(a) * r1,
-        x2: Math.sin(a) * r2, y2: -Math.cos(a) * r2,
-        class: major ? "a-tick a-tick-major" : "a-tick",
-      }));
-    }
-    for (var h = 1; h <= 12; h++) {
-      var b = (h * 30 * Math.PI) / 180;
-      var label = svg("text", { x: Math.sin(b) * 68, y: -Math.cos(b) * 68, class: "a-num" });
-      label.textContent = h;
-      root.appendChild(label);
-    }
-    var hand = function (cls, len, tail) {
-      var el = svg("line", { x1: 0, y1: tail || 0, x2: 0, y2: -len, class: cls });
-      root.appendChild(el);
-      return el;
-    };
-    var hands = {
-      hour: hand("a-hand a-hour", 44),
-      minute: hand("a-hand a-minute", 66),
-      second: hand("a-hand a-second", 78, 16),
-    };
-    root.appendChild(svg("circle", { r: 4.5, class: "a-hub" }));
-    return hands;
-  }
-
-  var hands = buildAnalog(document.getElementById("analog"));
-
-  function setHands(t) {
-    var min = t.mi + t.s / 60;
-    var hr = (t.h % 12) + min / 60;
-    hands.hour.setAttribute("transform", "rotate(" + hr * 30 + ")");
-    hands.minute.setAttribute("transform", "rotate(" + min * 6 + ")");
-    hands.second.setAttribute("transform", "rotate(" + t.s * 6 + ")"); // ticks once per second
   }
 
   // ---- render --------------------------------------------------------------
@@ -155,8 +101,7 @@
     var p = st.progress === null ? 0 : Math.min(Math.max(st.progress, 0), 1);
     var scale = "scaleX(" + p.toFixed(4) + ")";
     bars.forEach(function (bar) { bar.style.transform = scale; });
-
-    setHands(st.time);
+    ring.setAttribute("stroke-dasharray", (p * 100).toFixed(2) + " 100"); // ring is pathLength=100
   }
 
   // Re-render on every whole second (just after the boundary).
