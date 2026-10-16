@@ -1,11 +1,16 @@
 # ClassClock
 
 授業中に、**現在時刻と授業終了までの残り時間**をひと目で確認するための時計アプリです。
-HTML / CSS / JavaScript だけの静的 Web アプリ（ビルド不要・外部ライブラリなし）で、GitHub Pages でそのまま公開できます。
+HTML / CSS / JavaScript だけの静的 Web アプリ（ビルド不要・外部ライブラリなし）です。
 
 - **Mac**: Hammerspoon で小窓（約 285×70 px）を常時最前面に表示（`?mode=compact`）
 - **スマホ**: 縦画面向け。アナログ時計・残り時間・画面スリープ防止ボタン
 - 東北学院大学 2026 年度の標準授業時間帯で校時を自動判定（日本時間基準）
+
+## 公開ページ
+
+- スマホ・ブラウザ用: <https://sasekazu.github.io/class-clock/>
+- Mac の小窓（コンパクト表示）用: <https://sasekazu.github.io/class-clock/?mode=compact>
 
 ## 表示の見かた
 
@@ -66,23 +71,12 @@ python3 -m http.server 8000
 
 - 上部: 校時と授業時間帯 / 中央: アナログ時計（時針・分針・赤い秒針）と現在時刻・残り時間 / 下部: プログレスバーと開始・終了時刻
 - **画面を点灯したままにする** ボタン: [Screen Wake Lock API](https://developer.mozilla.org/docs/Web/API/Screen_Wake_Lock_API) で画面スリープを防ぎます。
-  - HTTPS（GitHub Pages）または localhost で開いたときに使えます。
+  - HTTPS（公開ページ）または localhost で開いたときに使えます。
   - 非対応のブラウザや `http://` で開いた場合は、ボタンが無効になり「端末の自動ロック設定を長くしてください」と案内します。
   - 別のアプリやタブに切り替えると解除されます。ページに戻ると、ボタンを ON にしていた場合は自動で再取得します。
   - 省電力モードなどで拒否されることがあります。その場合はメッセージを表示します。
 
 ホーム画面に追加（iOS: 共有 → ホーム画面に追加）すると、アドレスバーなしで使えます。
-
-## GitHub Pages で公開する
-
-1. このリポジトリを GitHub に push します。
-2. リポジトリの **Settings → Pages → Build and deployment** を開きます。
-3. **Source** を「Deploy from a branch」、**Branch** を公開したいブランチ（例: `main`）／ **`/ (root)`** にして Save します。
-4. 数分後、次の URL で公開されます。
-   - `https://<ユーザー名>.github.io/class-clock/`
-   - Mac 用: `https://<ユーザー名>.github.io/class-clock/?mode=compact`
-
-`hammerspoon/init.lua` の `url` は `https://sasekazu.github.io/class-clock/?mode=compact` になっています。別のアカウント・リポジトリ名で公開した場合は書き換えてください。
 
 ## Hammerspoon の設定（Mac）
 
