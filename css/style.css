@@ -56,6 +56,10 @@
   --m-card-rm-size: 68;   /* remaining minutes */
   --m-card-unit-size: 22; /* "分" in the card */
   --m-bar-h: 26;          /* thickness of the card's bar */
+  --m-bar-gap: 2;         /* gap between the 30-minute segments (smaller = less visible) */
+  --m-radius-card: 10;    /* corner radius of the current-class card */
+  --m-radius-bar: 5;      /* corner radius of the bar (outer ends only) */
+  --m-radius-btn: 8;      /* corner radius of the wake-lock button */
   --m-btn-size: 16;
 }
 
@@ -182,7 +186,7 @@ body[data-phase="off"] .m-sec { font-size: calc(var(--u) * var(--m-off-clock-siz
   --card: var(--accent);
   margin: calc(var(--u) * 6) 0;
   padding: calc(var(--u) * 12) calc(var(--u) * 16) calc(var(--u) * 16);
-  border: calc(var(--u) * 2) solid var(--card); border-radius: calc(var(--u) * 18);
+  border: calc(var(--u) * 2) solid var(--card); border-radius: calc(var(--u) * var(--m-radius-card));
 }
 .k-head { display: flex; align-items: center; gap: calc(var(--u) * 14); color: var(--fg); }
 .k-head .k-no { background: var(--card); border-color: var(--card); color: #000; }
@@ -196,8 +200,8 @@ body[data-phase="off"] .m-sec { font-size: calc(var(--u) * var(--m-off-clock-siz
 .k-rm .k-n { font-size: calc(var(--u) * var(--m-card-rm-size)); font-weight: 700; color: var(--card); }
 .k-rm .k-u { color: var(--card); }
 /* bar length ~ duration: a 90-minute class is full width, a 15-minute break is a sixth of it */
-.k-bar { display: flex; gap: calc(var(--u) * 6); }
-.k-seg { height: calc(var(--u) * var(--m-bar-h)); border-radius: 99px; background: var(--faint); overflow: hidden; position: relative; }
+.k-bar { display: flex; gap: calc(var(--u) * var(--m-bar-gap)); border-radius: calc(var(--u) * var(--m-radius-bar)); overflow: hidden; background: var(--bg); }
+.k-seg { height: calc(var(--u) * var(--m-bar-h)); background: var(--faint); position: relative; } /* square ends: only the whole bar is rounded */
 .k-seg i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--card); }
 
 .wake {
@@ -206,7 +210,7 @@ body[data-phase="off"] .m-sec { font-size: calc(var(--u) * var(--m-off-clock-siz
   padding: calc(var(--u) * 13) 0;
   font: inherit; font-size: calc(var(--u) * var(--m-btn-size));
   color: var(--dim); background: transparent;
-  border: 1px solid #3a3a3a; border-radius: calc(var(--u) * 12);
+  border: 1px solid #3a3a3a; border-radius: calc(var(--u) * var(--m-radius-btn));
   cursor: pointer;
 }
 .wake[aria-pressed="true"] { color: var(--c-class); border-color: var(--c-class); }
