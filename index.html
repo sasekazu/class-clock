@@ -32,12 +32,25 @@
     <div class="bar"><i data-bind-progress></i></div>
   </main>
 
-  <!-- Mobile layout: portrait phone -->
+  <!-- Mobile layout: portrait phone.
+       Top to bottom: date + clock / period + scheduled time / whole-day bar / progress ring / wake-lock button -->
   <main id="mobile" class="mobile" aria-label="ClassClock スマートフォン表示">
-    <header class="m-head">
-      <div class="m-title" data-bind="title">&nbsp;</div>
-      <div class="m-range" data-bind="range">&nbsp;</div>
+    <header class="m-top">
+      <div class="m-date" data-bind="date">&nbsp;</div>
+      <div class="m-time"><span class="m-clock" data-bind="clock">--:--</span><span class="m-sec" data-bind="sec">00</span></div>
     </header>
+
+    <section class="m-period">
+      <div class="m-periodline">
+        <span class="m-title" data-bind="title">&nbsp;</span>
+        <span class="m-range" data-bind="range">&nbsp;</span>
+      </div>
+      <!-- Whole school day: one segment per period, marker = now (built by app.js) -->
+      <div class="m-day" id="day" role="img" aria-label="1日の授業の進み具合">
+        <div class="tl"></div>
+        <div class="tl-labels"></div>
+      </div>
+    </section>
 
     <section class="m-body">
       <!-- Progress ring: the coloured arc is the elapsed share of the class (or break); remaining minutes sit inside -->
@@ -53,17 +66,9 @@
           <div class="m-remain"><span class="m-num" data-bind="remain">--</span><span class="m-unit">分</span></div>
         </div>
       </div>
-      <div class="m-time"><span class="m-clock" data-bind="clock">--:--</span><span class="m-sec" data-bind="sec">00</span></div>
-      <div class="m-date" data-bind="date">&nbsp;</div>
-      <div class="m-offinfo" data-bind="sub">&nbsp;</div>
     </section>
 
     <section class="m-foot">
-      <!-- Whole school day: one segment per period, marker = now (built by app.js) -->
-      <div class="m-day" id="day" role="img" aria-label="1日の授業の進み具合">
-        <div class="tl"></div>
-        <div class="tl-labels"></div>
-      </div>
       <button id="wake-btn" class="wake" type="button" aria-pressed="false">画面を点灯したままにする</button>
       <p id="wake-msg" class="wake-msg" role="status"></p>
     </section>

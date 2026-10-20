@@ -41,19 +41,18 @@
 /* ---------- sizes: mobile (portrait phone) ---------- */
 :root {
   --m-pad: 20;
-  --m-title-size: 46;
-  --m-range-size: 21;
-  --m-ring-size: 250;     /* diameter of the progress ring */
-  --m-label-size: 16;     /* "終了まで" inside the ring */
-  --m-num-size: 92;       /* remaining minutes inside the ring */
-  --m-unit-size: 24;      /* "分" */
-  --m-clock-size: 52;     /* HH:mm */
-  --m-sec-size: 22;       /* :ss (small) */
-  --m-date-size: 16;
-  --m-offinfo-size: 18;
-  --m-off-clock-size: 88; /* HH:mm outside class hours (no ring) */
+  --m-date-size: 22;      /* 2026年10月16日（金） */
+  --m-clock-size: 66;     /* HH:mm */
+  --m-sec-size: 26;       /* :ss (small) */
+  --m-off-clock-size: 88; /* HH:mm outside class hours */
+  --m-title-size: 38;     /* "3校時" */
+  --m-range-size: 20;     /* scheduled time "13:15 – 14:45" */
   --m-day-h: 10;          /* thickness of the whole-day bar */
   --m-day-label-size: 14; /* period numbers under the whole-day bar */
+  --m-ring-size: 240;     /* diameter of the progress ring */
+  --m-label-size: 16;     /* "終了まで" inside the ring */
+  --m-num-size: 88;       /* remaining minutes inside the ring */
+  --m-unit-size: 24;      /* "分" */
   --m-btn-size: 16;
 }
 
@@ -134,7 +133,8 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
    ====================================================================== */
 .mobile {
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  grid-template-rows: auto auto 1fr auto;
+  gap: calc(var(--u) * 18);
   height: 100vh; height: 100dvh;
   width: min(100vw, calc(var(--u) * 480));
   margin: 0 auto;
@@ -143,17 +143,21 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
   padding-bottom: max(calc(var(--u) * var(--m-pad)), env(safe-area-inset-bottom));
 }
 
-.m-head { line-height: 1.1; }
-.m-title { font-size: calc(var(--u) * var(--m-title-size)); font-weight: 700; color: var(--fg); }
-.m-range { font-size: calc(var(--u) * var(--m-range-size)); color: var(--dim); margin-top: calc(var(--u) * 6); }
+/* 1. date + digital clock with small seconds */
+.m-top { line-height: 1.1; }
+.m-date { font-size: calc(var(--u) * var(--m-date-size)); font-weight: 500; color: var(--fg); }
+.m-time { white-space: nowrap; margin-top: calc(var(--u) * 4); line-height: 1; }
+.m-clock { font-size: calc(var(--u) * var(--m-clock-size)); font-weight: 600; letter-spacing: -0.01em; }
+.m-sec { font-size: calc(var(--u) * var(--m-sec-size)); font-weight: 500; color: var(--dim); margin-left: calc(var(--u) * 6); }
 
-.m-body {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: calc(var(--u) * 14);
-  min-height: 0; line-height: 1; text-align: center;
-}
+/* 2. period + scheduled time, then the whole-day bar */
+.m-periodline { display: flex; flex-wrap: wrap; align-items: baseline; gap: calc(var(--u) * 2) calc(var(--u) * 14); line-height: 1.15; }
+.m-title { font-size: calc(var(--u) * var(--m-title-size)); font-weight: 700; color: var(--accent); }
+.m-range { font-size: calc(var(--u) * var(--m-range-size)); color: var(--dim); }
+.m-day { margin-top: calc(var(--u) * 16); padding: 0 calc(var(--u) * 2); }
 
-/* progress ring: elapsed share drawn clockwise from 12 o'clock */
+/* 3. progress ring: elapsed share drawn clockwise from 12 o'clock */
+.m-body { display: flex; align-items: center; justify-content: center; min-height: 0; line-height: 1; text-align: center; }
 .m-ring { position: relative; width: calc(var(--u) * var(--m-ring-size)); height: calc(var(--u) * var(--m-ring-size)); flex: none; }
 .ring { width: 100%; height: 100%; display: block; transform: rotate(-90deg); }
 .ring-track, .ring-fill { fill: none; stroke-width: 18; }
@@ -171,21 +175,13 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
 .m-unit { font-size: calc(var(--u) * var(--m-unit-size)); font-weight: 500; margin-left: calc(var(--u) * 3); }
 body[data-state="warn"] .m-remain-label { color: var(--c-warn); }
 
-/* digital clock with small seconds */
-.m-time { white-space: nowrap; }
-.m-clock { font-size: calc(var(--u) * var(--m-clock-size)); font-weight: 500; letter-spacing: -0.01em; }
-.m-sec { font-size: calc(var(--u) * var(--m-sec-size)); font-weight: 500; color: var(--dim); margin-left: calc(var(--u) * 5); }
-.m-date { font-size: calc(var(--u) * var(--m-date-size)); color: var(--dim); }
-.m-offinfo { display: none; font-size: calc(var(--u) * var(--m-offinfo-size)); color: var(--dim); line-height: 1.4; }
-
-/* outside class hours: no ring, the clock is the centre of the screen */
+/* outside class hours: no ring; the clock gets bigger */
 body[data-phase="off"] .m-ring { display: none; }
 body[data-phase="off"] .m-clock { font-size: calc(var(--u) * var(--m-off-clock-size)); }
-body[data-phase="off"] .m-sec { font-size: calc(var(--u) * var(--m-off-clock-size) * 0.36); }
-body[data-phase="off"] .m-offinfo { display: block; }
+body[data-phase="off"] .m-sec { font-size: calc(var(--u) * var(--m-off-clock-size) * 0.32); }
+body[data-phase="off"] .m-title { color: var(--fg); }
 
 /* whole school day (one segment per period) */
-.m-day { padding: 0 calc(var(--u) * 2); }
 .tl { position: relative; height: calc(var(--u) * var(--m-day-h)); }
 .tl .seg { position: absolute; top: 0; height: 100%; border-radius: 99px; background: var(--faint); overflow: hidden; }
 .tl .seg i { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--c-class); }

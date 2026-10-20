@@ -43,7 +43,7 @@
     var v = {
       clock: st.clock,
       sec: String(t.s).padStart(2, "0"), // shown small, mobile layout only
-      date: t.mo + "/" + t.d + " (" + WEEKDAYS[t.wd] + ")",
+      date: t.y + "年" + t.mo + "月" + t.d + "日（" + WEEKDAYS[t.wd] + "）",
       title: "", sub: "", range: "", remain: "", remainLabel: "",
     };
 
