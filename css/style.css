@@ -15,6 +15,7 @@
   --fg: #f2f2f2;
   --dim: #9a9a9a;
   --faint: #2a2a2a;
+  --rule: #3a3a3a;     /* divider lines */
 
   --c-class: #4fd1c5;  /* in class */
   --c-warn: #ff8a3d;   /* 5 minutes or less left */
@@ -151,7 +152,7 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
 }
 
 /* 1. date + digital clock with small seconds */
-.m-top { line-height: 1.1; }
+.m-top { line-height: 1.1; padding-bottom: calc(var(--u) * 14); border-bottom: 1px solid var(--rule); }
 .m-date { font-size: calc(var(--u) * var(--m-date-size)); font-weight: 700; color: var(--fg); white-space: nowrap; }
 .m-time { white-space: nowrap; margin-top: calc(var(--u) * 4); line-height: 1; }
 .m-clock { font-size: calc(var(--u) * var(--m-clock-size)); font-weight: 600; letter-spacing: -0.01em; }
