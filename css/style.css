@@ -24,6 +24,7 @@
   --c-warn: #ff8a3d;   /* 5 minutes or less left */
   --c-break: #7fb2ff;  /* break between classes */
   --c-off: #f2f2f2;    /* outside class hours */
+  --c-mark: #ffd23f;   /* "予定あり" highlight */
 
   --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
           "Noto Sans JP", "Yu Gothic", "Segoe UI", Roboto, sans-serif;
@@ -191,8 +192,10 @@ body[data-phase="off"] .m-title { color: var(--fg); }
 .m-list { min-height: 0; overflow: hidden; }
 .k-row {
   display: flex; align-items: center; gap: calc(var(--u) * 14);
-  height: calc(var(--u) * var(--m-row-h)); padding: 0 calc(var(--u) * 6);
-  color: #d2d2d2;
+  width: 100%; height: calc(var(--u) * var(--m-row-h)); padding: 0 calc(var(--u) * 10) 0 calc(var(--u) * 6);
+  margin: 0; border: 0; background: transparent; font: inherit; text-align: left;
+  color: #d2d2d2; cursor: pointer; border-radius: calc(var(--u) * var(--m-radius-btn));
+  -webkit-tap-highlight-color: transparent;
 }
 .k-row.past { color: #6d6d6d; }
 .k-no {
@@ -204,6 +207,24 @@ body[data-phase="off"] .m-title { color: var(--fg); }
 .k-time { flex: 1; font-size: calc(var(--u) * var(--m-row-time-size)); font-weight: 500; white-space: nowrap; }
 .k-tag { font-size: calc(var(--u) * 16); white-space: nowrap; }
 
+/* "予定あり" check: a round box at the right end of a row / card header */
+.k-chk {
+  position: relative; flex: none; display: block;
+  width: calc(var(--u) * 28); height: calc(var(--u) * 28); border-radius: 50%;
+  border: calc(var(--u) * 2) solid #6a6a6a;
+}
+.mark .k-chk { background: var(--c-mark); border-color: var(--c-mark); }
+.mark .k-chk::after {
+  content: ""; position: absolute; left: 50%; top: 48%;
+  width: calc(var(--u) * 7); height: calc(var(--u) * 13);
+  border: solid #000; border-width: 0 calc(var(--u) * 3) calc(var(--u) * 3) 0;
+  transform: translate(-50%, -55%) rotate(45deg);
+}
+.k-row.mark { background: rgba(255, 210, 63, .14); box-shadow: inset calc(var(--u) * 4) 0 0 var(--c-mark); }
+.k-row.mark.past { background: rgba(255, 210, 63, .08); }
+.k-chkbtn { flex: none; margin: 0; padding: 0; border: 0; background: transparent; cursor: pointer; display: block; -webkit-tap-highlight-color: transparent; }
+.k-card.mark { background: rgba(255, 210, 63, .09); }
+
 .k-card {
   --card: var(--accent);
   margin: calc(var(--u) * 6) 0;
@@ -211,6 +232,7 @@ body[data-phase="off"] .m-title { color: var(--fg); }
   border: calc(var(--u) * 2) solid var(--card); border-radius: calc(var(--u) * var(--m-radius-card));
 }
 .k-head { display: flex; align-items: center; gap: calc(var(--u) * 14); color: var(--fg); }
+.k-head .k-tag { margin-left: auto; }
 .k-head .k-no { background: var(--card); border-color: var(--card); color: #000; }
 .k-head .k-time { font-size: calc(var(--u) * var(--m-card-time-size)); font-weight: 600; }
 .k-head .k-tag { color: var(--dim); font-weight: 500; }

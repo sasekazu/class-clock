@@ -101,10 +101,32 @@
   var listKey = null;
   var card = null; // refs into the current card, updated every second
 
+  // "予定あり" marks: checked per day, kept in this browser only (cleared by the next date).
+  var M = window.ClassClockMarks;
+  var marks = [];
+  var marksDay = null;
+  var isMarked = function (n) { return marks.indexOf(n) >= 0; };
+
+  function loadMarks(day) {
+    var raw = null;
+    try { raw = localStorage.getItem(M.KEY); } catch (e) { /* storage unavailable: marks last until reload */ }
+    marks = M.parse(raw, day);
+    marksDay = day;
+  }
+
+  function saveMarks() {
+    try { localStorage.setItem(M.KEY, M.serialize(marksDay, marks)); } catch (e) { /* ignore */ }
+  }
+
+  var CHECK_LABEL = "校時を「予定あり」にする";
+
   function rowHTML(p, state, tag) {
-    return '<div class="k-row ' + state + '"><span class="k-no">' + p.n + '</span>' +
+    var on = isMarked(p.n);
+    return '<button type="button" class="k-row ' + state + (on ? " mark" : "") + '" data-mark="' + p.n +
+      '" aria-pressed="' + on + '" aria-label="' + p.n + CHECK_LABEL + '">' +
+      '<span class="k-no">' + p.n + '</span>' +
       '<span class="k-time">' + minutesText(p.start) + " – " + minutesText(p.end) + "</span>" +
-      '<span class="k-tag">' + tag + "</span></div>";
+      '<span class="k-tag">' + tag + '</span><span class="k-chk" aria-hidden="true"></span></button>';
   }
 
   function cardHTML(st) {
@@ -118,10 +140,15 @@
       segs += '<span class="k-seg" style="flex:' + len + '"><i></i></span>';
     }
     var width = Math.min(1, total / BAR_REF_MIN) * 100;
-    return '<div class="k-card ' + (isClass ? "class" : "break") + '">' +
+    var on = isClass && isMarked(st.current.n);
+    var chk = isClass
+      ? '<button type="button" class="k-chkbtn" data-mark="' + st.current.n + '" aria-pressed="' + on +
+        '" aria-label="' + st.current.n + CHECK_LABEL + '"><span class="k-chk" aria-hidden="true"></span></button>'
+      : "";
+    return '<div class="k-card ' + (isClass ? "class" : "break") + (on ? " mark" : "") + '">' +
       '<div class="k-head"><span class="k-no">' + no + '</span>' +
       '<span class="k-time">' + minutesText(st.startMin) + " – " + minutesText(st.endMin) + "</span>" +
-      '<span class="k-tag">' + tag + "</span></div>" +
+      '<span class="k-tag">' + tag + "</span>" + chk + "</div>" +
       '<div class="k-nums">' +
       '<div class="k-el"><span class="k-lbl">経過</span><span class="k-n" data-k="el">0</span><span class="k-u">分</span></div>' +
       '<div class="k-rm"><span class="k-lbl">残り</span><span class="k-n" data-k="rm">0</span><span class="k-u">分</span></div></div>' +
@@ -163,8 +190,18 @@
     }
   }
 
+  listEl.addEventListener("click", function (e) {
+    var target = e.target.closest("[data-mark]");
+    if (!target) return;
+    marks = M.toggle(marks, Number(target.getAttribute("data-mark")));
+    saveMarks();
+    render(); // rebuilds the list because the marks are part of its key
+  });
+
   function renderList(st) {
-    var key = [st.schoolDay, st.phase, st.current && st.current.n, st.previous && st.previous.n, st.next && st.next.n].join("|");
+    var day = M.dateKey(st.time);
+    if (day !== marksDay) loadMarks(day); // first render, or the date changed
+    var key = [day, marks.join(","), st.schoolDay, st.phase, st.current && st.current.n, st.previous && st.previous.n, st.next && st.next.n].join("|");
     if (key !== listKey) { listKey = key; buildList(st); }
     if (!card) return;
     card.el.textContent = st.elapsedMin;
