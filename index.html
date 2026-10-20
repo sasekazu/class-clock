@@ -33,7 +33,7 @@
   </main>
 
   <!-- Mobile layout: portrait phone.
-       Top to bottom: date + clock / period + scheduled time / whole-day bar / progress ring / wake-lock button -->
+       Top to bottom: date + clock / period + scheduled time / timetable list (built by app.js) / wake-lock button -->
   <main id="mobile" class="mobile" aria-label="ClassClock スマートフォン表示">
     <header class="m-top">
       <div class="m-date" data-bind="date">&nbsp;</div>
@@ -45,28 +45,11 @@
         <span class="m-title" data-bind="title">&nbsp;</span>
         <span class="m-range" data-bind="range">&nbsp;</span>
       </div>
-      <!-- Whole school day: one segment per period, marker = now (built by app.js) -->
-      <div class="m-day" id="day" role="img" aria-label="1日の授業の進み具合">
-        <div class="tl"></div>
-        <div class="tl-labels"></div>
-      </div>
     </section>
 
-    <section class="m-body">
-      <!-- Progress ring: the coloured arc is the elapsed share of the class (or break); remaining minutes sit inside -->
-      <div class="m-ring">
-        <svg class="ring" viewBox="0 0 200 200" aria-hidden="true">
-          <circle class="ring-track" cx="100" cy="100" r="88" />
-          <circle class="ring-fill" cx="100" cy="100" r="88" pathLength="100" stroke-dasharray="0 100" data-bind-ring />
-          <!-- gaps every 30 minutes, drawn by app.js -->
-          <g id="ring-ticks"></g>
-        </svg>
-        <div class="m-ring-text">
-          <div class="m-remain-label" data-bind="remainLabel">&nbsp;</div>
-          <div class="m-remain"><span class="m-num" data-bind="remain">--</span><span class="m-unit">分</span></div>
-        </div>
-      </div>
-    </section>
+    <!-- 1-5 校時の一覧。いまの授業（または休み時間）は大きなカードになり、
+         経過・残りの分数と、時間に比例した長さのバーが出る -->
+    <section class="m-list" id="list" aria-label="今日の時間割"></section>
 
     <section class="m-foot">
       <button id="wake-btn" class="wake" type="button" aria-pressed="false">画面を点灯したままにする</button>

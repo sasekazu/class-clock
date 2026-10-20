@@ -12,7 +12,6 @@
   "use strict";
 
   var S = window.ClassClockSchedule;
-  var SVGNS = "http://www.w3.org/2000/svg";
   var WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
   // ---- time source (real clock, or ?now= for debugging) --------------------
@@ -76,7 +75,6 @@
     (bound[el.getAttribute("data-bind")] = bound[el.getAttribute("data-bind")] || []).push(el);
   });
   var bars = Array.prototype.slice.call(document.querySelectorAll("[data-bind-progress]"));
-  var ring = document.querySelector("[data-bind-ring]");
   var cache = {};
 
   function setText(name, value) {
@@ -89,76 +87,93 @@
     if (document.body.getAttribute(attr) !== value) document.body.setAttribute(attr, value);
   }
 
-  // ---- ring: a gap every 30 minutes (mobile) -----------------------------------
+  // ---- timetable list (mobile) -------------------------------------------------
+  //
+  // Rows for periods 1-5. The class in progress (or the break) becomes a card with
+  // elapsed / remaining minutes and a bar whose length is proportional to its duration
+  // (BAR_REF_MIN = full width), split into 30-minute segments.
 
-  var RING_STEP_MIN = 30;
-  var ringTicks = document.getElementById("ring-ticks");
-  var ticksFor = null;
+  var LIST_LAST_PERIOD = 5; // 6th/7th only appear, as the card, while they are in progress
+  var BAR_REF_MIN = 90;     // a segment this long fills the whole bar width
+  var BAR_STEP_MIN = 30;
 
-  /** Cut the ring into 30-minute arcs: a 90-minute class becomes three arcs. */
-  function setRingTicks(totalMin) {
-    if (ticksFor === totalMin) return;
-    ticksFor = totalMin;
-    while (ringTicks.firstChild) ringTicks.removeChild(ringTicks.firstChild);
-    if (!totalMin) return;
-    for (var m = 0; m < totalMin; m += RING_STEP_MIN) {
-      var tick = document.createElementNS(SVGNS, "line");
-      tick.setAttribute("x1", 170); tick.setAttribute("y1", 100);
-      tick.setAttribute("x2", 200); tick.setAttribute("y2", 100);
-      tick.setAttribute("class", "ring-tick");
-      // the whole svg is turned -90deg in CSS, so angle 0 is 12 o'clock
-      tick.setAttribute("transform", "rotate(" + (360 * m / totalMin) + " 100 100)");
-      ringTicks.appendChild(tick);
+  var listEl = document.getElementById("list");
+  var listKey = null;
+  var card = null; // refs into the current card, updated every second
+
+  function rowHTML(p, state, tag) {
+    return '<div class="k-row ' + state + '"><span class="k-no">' + p.n + '</span>' +
+      '<span class="k-time">' + minutesText(p.start) + " – " + minutesText(p.end) + "</span>" +
+      '<span class="k-tag">' + tag + "</span></div>";
+  }
+
+  function cardHTML(st) {
+    var total = st.endMin - st.startMin;
+    var isClass = st.phase === "class";
+    var no = isClass ? st.current.n : "休";
+    var tag = (isClass ? "授業" : "休み") + total + "分";
+    var segs = "";
+    for (var m = 0; m < total; m += BAR_STEP_MIN) {
+      var len = Math.min(BAR_STEP_MIN, total - m);
+      segs += '<span class="k-seg" style="flex:' + len + '"><i></i></span>';
+    }
+    var width = Math.min(1, total / BAR_REF_MIN) * 100;
+    return '<div class="k-card ' + (isClass ? "class" : "break") + '">' +
+      '<div class="k-head"><span class="k-no">' + no + '</span>' +
+      '<span class="k-time">' + minutesText(st.startMin) + " – " + minutesText(st.endMin) + "</span>" +
+      '<span class="k-tag">' + tag + "</span></div>" +
+      '<div class="k-nums">' +
+      '<div class="k-el"><span class="k-lbl">経過</span><span class="k-n" data-k="el">0</span><span class="k-u">分</span></div>' +
+      '<div class="k-rm"><span class="k-lbl">残り</span><span class="k-n" data-k="rm">0</span><span class="k-u">分</span></div></div>' +
+      '<div class="k-bar" style="width:' + width.toFixed(2) + '%">' + segs + "</div></div>";
+  }
+
+  function buildList(st) {
+    var out = "";
+    if (st.schoolDay) {
+      var cardHtml = st.phase === "off" ? "" : cardHTML(st);
+      var placed = false;
+      S.PERIODS.forEach(function (p) {
+        if (p.n > LIST_LAST_PERIOD) return;
+        if (st.phase === "break" && st.next.n === p.n) { out += cardHtml; placed = true; } // break sits before its next class
+        if (st.phase === "class" && st.current.n === p.n) { out += cardHtml; placed = true; return; }
+        var past = st.previous !== null && p.n <= st.previous.n;
+        out += rowHTML(p, past ? "past" : "future", past ? "終了" : st.next && st.next.n === p.n ? "次" : "");
+      });
+      if (!placed) out += cardHtml;
+    }
+    listEl.innerHTML = out;
+
+    var el = listEl.querySelector(".k-card");
+    card = null;
+    if (el) {
+      var fills = [];
+      var from = 0;
+      Array.prototype.forEach.call(el.querySelectorAll(".k-seg"), function (seg) {
+        var len = Math.min(BAR_STEP_MIN, st.endMin - st.startMin - from);
+        fills.push({ fill: seg.firstChild, from: from, len: len });
+        from += len;
+      });
+      card = {
+        total: st.endMin - st.startMin,
+        el: el.querySelector('[data-k="el"]'),
+        rm: el.querySelector('[data-k="rm"]'),
+        fills: fills,
+      };
     }
   }
 
-  // ---- day timeline (mobile) ---------------------------------------------------
-
-  var dayTl = document.querySelector("#day .tl");
-  var dayLabels = document.querySelector("#day .tl-labels");
-  // Only periods 1-5 are drawn in the bar (6th/7th are not shown). The clock, countdown
-  // and ring still handle them; the bar just stays "all done" once period 5 is over.
-  var DAY_BAR_LAST_PERIOD = 5;
-  var DAY_PERIODS = S.PERIODS.filter(function (p) { return p.n <= DAY_BAR_LAST_PERIOD; });
-  var DAY_START = DAY_PERIODS[0].start;
-  var DAY_END = DAY_PERIODS[DAY_PERIODS.length - 1].end;
-  var dayPct = function (min) { return ((min - DAY_START) / (DAY_END - DAY_START)) * 100; };
-
-  var daySegs = DAY_PERIODS.map(function (p) {
-    var seg = document.createElement("div");
-    seg.className = "seg future";
-    seg.style.left = dayPct(p.start) + "%";
-    seg.style.width = dayPct(p.end) - dayPct(p.start) + "%";
-    var fill = document.createElement("i");
-    seg.appendChild(fill);
-    dayTl.appendChild(seg);
-
-    var label = document.createElement("span");
-    label.textContent = p.n;
-    label.style.left = (dayPct(p.start) + dayPct(p.end)) / 2 + "%";
-    dayLabels.appendChild(label);
-    return { p: p, seg: seg, fill: fill, label: label, state: "future" };
-  });
-  var dayNow = document.createElement("div");
-  dayNow.className = "now";
-  dayTl.appendChild(dayNow);
-
-  function renderDay(st) {
-    var t = st.time;
-    var nowMin = t.h * 60 + t.mi + t.s / 60;
-    daySegs.forEach(function (d) {
-      var state = !st.schoolDay ? "future" : nowMin >= d.p.end ? "past" : nowMin >= d.p.start ? "cur" : "future";
-      if (d.state !== state) {
-        d.state = state;
-        d.seg.className = "seg " + state;
-        d.label.className = state === "cur" ? "cur" : "";
-      }
-      if (state === "cur") d.fill.style.width = (((nowMin - d.p.start) / (d.p.end - d.p.start)) * 100).toFixed(2) + "%";
-      else if (d.fill.style.width) d.fill.style.width = "";
+  function renderList(st) {
+    var key = [st.schoolDay, st.phase, st.current && st.current.n, st.previous && st.previous.n, st.next && st.next.n].join("|");
+    if (key !== listKey) { listKey = key; buildList(st); }
+    if (!card) return;
+    card.el.textContent = st.elapsedMin;
+    card.rm.textContent = st.remainingMin;
+    var elapsed = st.progress * card.total;
+    card.fills.forEach(function (f) {
+      var share = Math.min(Math.max((elapsed - f.from) / f.len, 0), 1);
+      f.fill.style.width = (share * 100).toFixed(2) + "%";
     });
-    var visible = st.schoolDay && nowMin >= DAY_START && nowMin <= DAY_END;
-    dayNow.style.display = visible ? "" : "none";
-    if (visible) dayNow.style.left = dayPct(nowMin).toFixed(3) + "%";
   }
 
   // ---- render --------------------------------------------------------------
@@ -174,9 +189,7 @@
     var p = st.progress === null ? 0 : Math.min(Math.max(st.progress, 0), 1);
     var scale = "scaleX(" + p.toFixed(4) + ")";
     bars.forEach(function (bar) { bar.style.transform = scale; });
-    ring.setAttribute("stroke-dasharray", (p * 100).toFixed(2) + " 100"); // ring is pathLength=100
-    setRingTicks(st.endMin === null ? 0 : st.endMin - st.startMin);
-    renderDay(st);
+    renderList(st);
   }
 
   // Re-render on every whole second (just after the boundary).
