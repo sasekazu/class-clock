@@ -44,7 +44,7 @@
       clock: st.clock,
       sec: String(t.s).padStart(2, "0"), // shown small, mobile layout only
       date: t.y + "年" + t.mo + "月" + t.d + "日（" + WEEKDAYS[t.wd] + "）",
-      title: "", sub: "", range: "", remain: "", remainLabel: "",
+      title: "", sub: "", range: "", remain: "", remainLabel: "", elapsed: "",
     };
 
     if (st.phase === "class") {
@@ -53,12 +53,14 @@
       v.range = minutesText(st.startMin) + " – " + minutesText(st.endMin);
       v.remainLabel = "終了まで";
       v.remain = String(st.remainingMin);
+      v.elapsed = "開始から " + st.elapsedMin + "分";
     } else if (st.phase === "break") {
       v.title = "休み時間";
       v.sub = periodName(st.next) + " " + minutesText(st.endMin) + "〜";
       v.range = "次は " + periodName(st.next) + " " + minutesText(st.endMin) + "〜";
       v.remainLabel = periodName(st.next) + "まで";
       v.remain = String(st.remainingMin);
+      v.elapsed = "休み開始から " + st.elapsedMin + "分";
     } else {
       v.title = st.offReason === "weekend" || st.offReason === "holiday" ? "休日" : "授業時間外";
       if (st.offReason === "before") v.sub = "次 " + periodName(st.next) + " " + minutesText(st.next.start) + "〜";
