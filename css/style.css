@@ -6,7 +6,7 @@
  *   - sizes:    --c-* (compact) and --m-* (mobile). They are plain numbers in
  *               "design pixels"; --u converts one design pixel to real pixels,
  *               so each layout scales with its window.
- *               Compact is designed on a 285 x 70 canvas, mobile on 390 wide, at least ~780 tall.
+ *               Compact is designed on a 285 x 70 canvas, mobile on 390 wide, at least ~815 tall.
  */
 
 /* ---------- palette ---------- */
@@ -15,7 +15,10 @@
   --fg: #f2f2f2;
   --dim: #9a9a9a;
   --faint: #2a2a2a;
-  --rule: #3a3a3a;     /* divider lines */
+  --rule: #5a5a5a;     /* panel border / divider lines */
+  --lcd-on: #f2f2f2;   /* lit segments of the digital clock */
+  --lcd-off: #262626;  /* unlit segments */
+  --panel: #0e0e0e;    /* background of the date/clock panel */
 
   --c-class: #4fd1c5;  /* in class */
   --c-warn: #ff8a3d;   /* 5 minutes or less left */
@@ -24,6 +27,13 @@
 
   --font: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
           "Noto Sans JP", "Yu Gothic", "Segoe UI", Roboto, sans-serif;
+}
+
+/* 7-segment digits for the mobile clock: DSEG7 Classic Bold (SIL OFL, see fonts/DSEG-LICENSE.txt) */
+@font-face {
+  font-family: "DSEG7";
+  src: url("../fonts/DSEG7Classic-Bold.woff2") format("woff2");
+  font-weight: 700; font-style: normal; font-display: block;
 }
 
 /* ---------- sizes: compact (Mac small window) ---------- */
@@ -42,10 +52,9 @@
 /* ---------- sizes: mobile (portrait phone) ---------- */
 :root {
   --m-pad: 20;
-  --m-date-size: 30;      /* 2026年10月16日（金） */
-  --m-clock-size: 66;     /* HH:mm */
-  --m-sec-size: 26;       /* :ss (small) */
-  --m-off-clock-size: 88; /* HH:mm outside class hours */
+  --m-date-size: 28;      /* 2026年10月16日（金） */
+  --m-clock-size: 78;     /* HH:mm (7-segment digits) */
+  --m-sec-size: 30;       /* :ss (small) */
   --m-title-size: 38;     /* "3校時" */
   --m-range-size: 28;     /* scheduled time "13:15 – 14:45" */
   --m-row-h: 58;          /* one period row in the list */
@@ -66,9 +75,9 @@
 
 /* design pixel -> real pixels */
 html[data-layout="compact"] { --u: min(calc(100vw / 285), calc(100vh / 70)); }
-html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100vh / 780), 1.7px); }
+html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100vh / 815), 1.7px); }
 @supports (height: 100dvh) {
-  html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100dvh / 780), 1.7px); }
+  html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100dvh / 815), 1.7px); }
 }
 
 /* ---------- state colour ---------- */
@@ -151,12 +160,21 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
   padding-bottom: max(calc(var(--u) * var(--m-pad)), env(safe-area-inset-bottom));
 }
 
-/* 1. date + digital clock with small seconds */
-.m-top { line-height: 1.1; padding-bottom: calc(var(--u) * 14); border-bottom: 1px solid var(--rule); }
+/* 1. display panel: date + digital (7-segment) clock with small seconds */
+.m-top {
+  background: var(--panel);
+  border: calc(var(--u) * 2) solid var(--rule); border-radius: calc(var(--u) * var(--m-radius-card));
+  padding: calc(var(--u) * 12) calc(var(--u) * 14) calc(var(--u) * 14);
+  line-height: 1.1;
+}
 .m-date { font-size: calc(var(--u) * var(--m-date-size)); font-weight: 700; color: var(--fg); white-space: nowrap; }
-.m-time { white-space: nowrap; margin-top: calc(var(--u) * 4); line-height: 1; }
-.m-clock { font-size: calc(var(--u) * var(--m-clock-size)); font-weight: 600; letter-spacing: -0.01em; }
-.m-sec { font-size: calc(var(--u) * var(--m-sec-size)); font-weight: 500; color: var(--dim); margin-left: calc(var(--u) * 6); }
+.m-time { white-space: nowrap; margin-top: calc(var(--u) * 8); line-height: 1; display: flex; align-items: flex-end; gap: calc(var(--u) * 10); }
+.lcd { position: relative; isolation: isolate; font-family: "DSEG7", monospace; font-weight: 700; font-variant-numeric: normal; letter-spacing: 0; color: var(--lcd-on); text-shadow: 0 0 calc(var(--u) * 6) rgba(255, 255, 255, .22); }
+.lcd::before { position: absolute; left: 0; top: 0; z-index: -1; color: var(--lcd-off); text-shadow: none; } /* unlit segments */
+.lcd-hm::before { content: "88:88"; }
+.lcd-s::before { content: "88"; }
+.m-clock { font-size: calc(var(--u) * var(--m-clock-size)); }
+.m-sec { font-size: calc(var(--u) * var(--m-sec-size)); color: #b5b5b5; }
 
 /* 2. period + scheduled time. During class / break the list card already says it, so the line
       is hidden; outside class hours it stays as the status line ("授業時間外", "休日 授業はありません"). */
@@ -168,8 +186,6 @@ body[data-phase="break"] .mobile { grid-template-rows: auto 1fr auto; }
 .m-title { font-size: calc(var(--u) * var(--m-title-size)); font-weight: 700; color: var(--accent); }
 .m-range { font-size: calc(var(--u) * var(--m-range-size)); font-weight: 500; color: #d2d2d2; }
 body[data-phase="off"] .m-title { color: var(--fg); }
-body[data-phase="off"] .m-clock { font-size: calc(var(--u) * var(--m-off-clock-size)); }
-body[data-phase="off"] .m-sec { font-size: calc(var(--u) * var(--m-off-clock-size) * 0.32); }
 
 /* 3. timetable list: periods 1-5, the current class / break is an expanded card */
 .m-list { min-height: 0; overflow: hidden; }

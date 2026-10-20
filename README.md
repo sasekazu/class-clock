@@ -83,7 +83,7 @@ python3 -m http.server 8000
 
 画面は上から次の順に並びます。
 
-1. **年月日・曜日・現在時刻**（日付は太字で大きく。時計はデジタルで、秒は小さく表示）
+1. **年月日・曜日・現在時刻**: 枠で囲んだ「表示パネル」に、日付（太字）と、7 セグメント風のデジタル時計（消灯したセグメントを薄く表示。秒は小さく表示）を出します。
 2. **状態の見出し**（授業時間外は「授業時間外」「休日 授業はありません」など）。授業中・休み時間は、下のカードが同じ内容を示すので表示しません。
 3. **時間割リスト**（1〜5 校時）。終わったコマは薄く、次のコマには「次」と表示します。いまの授業（または休み時間）は**大きなカード**になり、次を表示します:
    - **経過**（切り捨て）と**残り**（切り上げ）の分数。足すとかならず全体の長さ（授業なら 90 分）になります。
@@ -193,9 +193,12 @@ index.html            画面（compact / mobile の両方のマークアップ�
 css/style.css         スタイル（色・サイズは先頭の変数で調整）
 js/schedule.js        校時判定・残り時間・祝日のロジック（DOM に依存しない。Mac / スマホ共通、テスト対象）
 js/layout.js          compact / mobile の切り替え
+fonts/                7 セグメント風フォント DSEG7 Classic Bold（SIL Open Font License。`fonts/DSEG-LICENSE.txt`）
 js/app.js             描画（時間割リスト含む）・Wake Lock
 tests/schedule.test.js  ロジックのテスト
 hammerspoon/init.lua  Hammerspoon の設定
 ```
 
 既存の [saselab-clock](https://github.com/sasekazu/saselab-clock) の日本時間の扱い・祝日計算を参考にした、独立したプロジェクトです。
+
+スマホ表示のデジタル時計の数字には、Keshikan 氏の [DSEG](https://github.com/keshikan/DSEG)（SIL Open Font License 1.1）を同梱して使っています。

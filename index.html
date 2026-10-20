@@ -37,7 +37,8 @@
   <main id="mobile" class="mobile" aria-label="ClassClock スマートフォン表示">
     <header class="m-top">
       <div class="m-date" data-bind="date">&nbsp;</div>
-      <div class="m-time"><span class="m-clock" data-bind="clock">--:--</span><span class="m-sec" data-bind="sec">00</span></div>
+      <!-- 7-segment style clock (DSEG7 font). The dim "88:88" behind the digits is drawn by CSS. -->
+      <div class="m-time" aria-label="現在時刻"><span class="lcd lcd-hm m-clock" data-bind="clock">--:--</span><span class="lcd lcd-s m-sec" data-bind="sec">00</span></div>
     </header>
 
     <section class="m-period">
