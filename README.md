@@ -90,7 +90,10 @@ python3 -m http.server 8000
 5. 画面点灯ボタン
 
 授業時間外は、リングを出さずに現在時刻を大きく表示します（1 日のバーは残ります）。
-- **画面を点灯したままにする** ボタン: [Screen Wake Lock API](https://developer.mozilla.org/docs/Web/API/Screen_Wake_Lock_API) で画面スリープを防ぎます。
+
+画面点灯ボタンの動作:
+
+- [Screen Wake Lock API](https://developer.mozilla.org/docs/Web/API/Screen_Wake_Lock_API) で画面スリープを防ぎます。
   - HTTPS（公開ページ）または localhost で開いたときに使えます。
   - 非対応のブラウザや `http://` で開いた場合は、ボタンが無効になり「端末の自動ロック設定を長くしてください」と案内します。
   - 別のアプリやタブに切り替えると解除されます。ページに戻ると、ボタンを ON にしていた場合は自動で再取得します。
