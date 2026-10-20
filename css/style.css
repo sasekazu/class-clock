@@ -6,7 +6,7 @@
  *   - sizes:    --c-* (compact) and --m-* (mobile). They are plain numbers in
  *               "design pixels"; --u converts one design pixel to real pixels,
  *               so each layout scales with its window.
- *               Compact is designed on a 285 x 70 canvas, mobile on 390 wide, at least ~830 tall.
+ *               Compact is designed on a 285 x 70 canvas, mobile on 390 wide, at least ~780 tall.
  */
 
 /* ---------- palette ---------- */
@@ -47,7 +47,7 @@
   --m-off-clock-size: 88; /* HH:mm outside class hours */
   --m-title-size: 38;     /* "3校時" */
   --m-range-size: 28;     /* scheduled time "13:15 – 14:45" */
-  --m-row-h: 54;          /* one period row in the list */
+  --m-row-h: 58;          /* one period row in the list */
   --m-row-no-size: 34;    /* period number circle */
   --m-row-time-size: 24;  /* "10:45 – 12:15" in a row */
   --m-card-time-size: 22; /* time range in the current card */
@@ -65,9 +65,9 @@
 
 /* design pixel -> real pixels */
 html[data-layout="compact"] { --u: min(calc(100vw / 285), calc(100vh / 70)); }
-html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100vh / 830), 1.7px); }
+html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100vh / 780), 1.7px); }
 @supports (height: 100dvh) {
-  html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100dvh / 830), 1.7px); }
+  html[data-layout="mobile"] { --u: min(calc(100vw / 390), calc(100dvh / 780), 1.7px); }
 }
 
 /* ---------- state colour ---------- */
@@ -157,7 +157,12 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
 .m-clock { font-size: calc(var(--u) * var(--m-clock-size)); font-weight: 600; letter-spacing: -0.01em; }
 .m-sec { font-size: calc(var(--u) * var(--m-sec-size)); font-weight: 500; color: var(--dim); margin-left: calc(var(--u) * 6); }
 
-/* 2. period + scheduled time */
+/* 2. period + scheduled time. During class / break the list card already says it, so the line
+      is hidden; outside class hours it stays as the status line ("授業時間外", "休日 授業はありません"). */
+body[data-phase="class"] .m-period,
+body[data-phase="break"] .m-period { display: none; }
+body[data-phase="class"] .mobile,
+body[data-phase="break"] .mobile { grid-template-rows: auto 1fr auto; }
 .m-periodline { display: flex; flex-wrap: wrap; align-items: baseline; gap: calc(var(--u) * 2) calc(var(--u) * 14); line-height: 1.15; }
 .m-title { font-size: calc(var(--u) * var(--m-title-size)); font-weight: 700; color: var(--accent); }
 .m-range { font-size: calc(var(--u) * var(--m-range-size)); font-weight: 500; color: #d2d2d2; }
