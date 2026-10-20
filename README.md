@@ -193,7 +193,7 @@ index.html            画面（compact / mobile の両方のマークアップ�
 css/style.css         スタイル（色・サイズは先頭の変数で調整）
 js/schedule.js        校時判定・残り時間・祝日のロジック（DOM に依存しない。Mac / スマホ共通、テスト対象）
 js/layout.js          compact / mobile の切り替え
-fonts/                7 セグメント風フォント DSEG7 Classic Bold（SIL Open Font License。`fonts/DSEG-LICENSE.txt`）
+fonts/                7 セグメント風フォント DSEG7 Classic Bold Italic（SIL Open Font License。`fonts/DSEG-LICENSE.txt`）
 js/app.js             描画（時間割リスト含む）・Wake Lock
 tests/schedule.test.js  ロジックのテスト
 hammerspoon/init.lua  Hammerspoon の設定

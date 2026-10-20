@@ -29,10 +29,10 @@
           "Noto Sans JP", "Yu Gothic", "Segoe UI", Roboto, sans-serif;
 }
 
-/* 7-segment digits for the mobile clock: DSEG7 Classic Bold (SIL OFL, see fonts/DSEG-LICENSE.txt) */
+/* 7-segment digits for the mobile clock: DSEG7 Classic Bold Italic (SIL OFL, see fonts/DSEG-LICENSE.txt) */
 @font-face {
   font-family: "DSEG7";
-  src: url("../fonts/DSEG7Classic-Bold.woff2") format("woff2");
+  src: url("../fonts/DSEG7Classic-BoldItalic.woff2") format("woff2");
   font-weight: 700; font-style: normal; font-display: block;
 }
 
