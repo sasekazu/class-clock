@@ -46,14 +46,13 @@
   --m-sec-size: 26;       /* :ss (small) */
   --m-off-clock-size: 88; /* HH:mm outside class hours */
   --m-title-size: 38;     /* "3校時" */
-  --m-range-size: 20;     /* scheduled time "13:15 – 14:45" */
-  --m-day-h: 10;          /* thickness of the whole-day bar */
-  --m-day-label-size: 14; /* period numbers under the whole-day bar */
+  --m-range-size: 28;     /* scheduled time "13:15 – 14:45" */
+  --m-day-h: 16;          /* thickness of the whole-day bar */
+  --m-day-label-size: 18; /* period numbers under the whole-day bar */
   --m-ring-size: 240;     /* diameter of the progress ring */
-  --m-label-size: 16;     /* "終了まで" inside the ring */
+  --m-label-size: 19;     /* "90分中 残り" inside the ring */
   --m-num-size: 88;       /* remaining minutes inside the ring */
   --m-unit-size: 24;      /* "分" */
-  --m-elapsed-size: 18;   /* "開始から 45分" inside the ring */
   --m-btn-size: 16;
 }
 
@@ -154,7 +153,7 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
 /* 2. period + scheduled time, then the whole-day bar */
 .m-periodline { display: flex; flex-wrap: wrap; align-items: baseline; gap: calc(var(--u) * 2) calc(var(--u) * 14); line-height: 1.15; }
 .m-title { font-size: calc(var(--u) * var(--m-title-size)); font-weight: 700; color: var(--accent); }
-.m-range { font-size: calc(var(--u) * var(--m-range-size)); color: var(--dim); }
+.m-range { font-size: calc(var(--u) * var(--m-range-size)); font-weight: 500; color: #d2d2d2; }
 .m-day { margin-top: calc(var(--u) * 16); padding: 0 calc(var(--u) * 2); }
 
 /* 3. progress ring: elapsed share drawn clockwise from 12 o'clock */
@@ -174,7 +173,6 @@ body[data-phase="off"] .c-row { grid-template-columns: calc(var(--u) * 12) 1fr c
 .m-remain { white-space: nowrap; margin-top: calc(var(--u) * 4); }
 .m-num { font-size: calc(var(--u) * var(--m-num-size)); font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
 .m-unit { font-size: calc(var(--u) * var(--m-unit-size)); font-weight: 500; margin-left: calc(var(--u) * 3); }
-.m-elapsed { font-size: calc(var(--u) * var(--m-elapsed-size)); color: var(--dim); margin-top: calc(var(--u) * 8); white-space: nowrap; }
 body[data-state="warn"] .m-remain-label { color: var(--c-warn); }
 
 /* outside class hours: no ring; the clock gets bigger */
@@ -190,8 +188,8 @@ body[data-phase="off"] .m-title { color: var(--fg); }
 .tl .seg.past i { width: 100%; opacity: .45; }
 .tl .seg.cur i { background: var(--accent); }
 .tl .now {
-  position: absolute; top: calc(var(--u) * -6); bottom: calc(var(--u) * -6);
-  width: calc(var(--u) * 3); margin-left: calc(var(--u) * -1.5);
+  position: absolute; top: calc(var(--u) * -8); bottom: calc(var(--u) * -8);
+  width: calc(var(--u) * 4); margin-left: calc(var(--u) * -2);
   background: var(--fg); border-radius: 2px;
 }
 .tl-labels { position: relative; height: 1.3em; margin-top: calc(var(--u) * 9); font-size: calc(var(--u) * var(--m-day-label-size)); color: var(--dim); }

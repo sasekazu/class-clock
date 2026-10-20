@@ -76,26 +76,6 @@ test("remaining minutes are rounded up", () => {
   assert.equal(status(FRI, "10:14:59.999").remainingMin, 1);
 });
 
-test("elapsed minutes are rounded down and pair with the remaining minutes", () => {
-  assert.equal(status(FRI, "8:45:00").elapsedMin, 0);
-  assert.equal(status(FRI, "8:45:59.999").elapsedMin, 0);
-  assert.equal(status(FRI, "8:46:00").elapsedMin, 1);
-  assert.equal(status(FRI, "9:30:00").elapsedMin, 45);
-  assert.equal(status(FRI, "10:14:59.999").elapsedMin, 89);
-  for (const time of ["8:45:00", "9:00:00", "9:58:00", "10:14:00"]) {
-    const s = status(FRI, time); // on a whole minute: elapsed + remaining = 90
-    assert.equal(s.elapsedMin + s.remainingMin, 90, time);
-  }
-  // within a minute the two differ by at most one
-  const mid = status(FRI, "9:58:20");
-  assert.deepEqual([mid.elapsedMin, mid.remainingMin], [73, 17]);
-  // breaks count from the end of the previous class; off-hours have none
-  assert.equal(status(FRI, "10:20:00").elapsedMin, 5);
-  assert.equal(status(FRI, "12:15:00").elapsedMin, 0);
-  assert.equal(status(FRI, "07:00:00").elapsedMin, null);
-  assert.equal(status("2026-10-17", "10:00:00").elapsedMin, null);
-});
-
 test("warning turns on at 5 minutes remaining or less, only during class", () => {
   assert.equal(status(FRI, "10:09:59").remainingMin, 6);
   assert.equal(status(FRI, "10:09:59").warn, false);

@@ -134,8 +134,7 @@
    *   'off'   - weekend/holiday, before the first period or after the last one
    *
    * remainingMin is rounded UP to whole minutes, so it never reads 0 while a
-   * segment is still running (10:14:30 -> 1). elapsedMin is rounded DOWN, so the two
-   * add up to the segment length except within the current minute (9:58:20 -> 73 + 17).
+   * segment is still running (10:14:30 -> 1).
    */
   function getStatus(epochMs) {
     const t = jstParts(epochMs);
@@ -156,7 +155,6 @@
       startMin: null,  // start of the segment being counted (class or break)
       endMin: null,    // end of that segment
       remainingMin: null,
-      elapsedMin: null, // whole minutes since the segment started (rounded down)
       progress: null,  // 0..1 elapsed within the segment
       warn: false,
     };
@@ -184,7 +182,6 @@
     status.startMin = startMin;
     status.endMin = endMin;
     status.remainingMin = Math.ceil((endMin * MS_PER_MIN - nowMs) / MS_PER_MIN);
-    status.elapsedMin = Math.floor((nowMs - startMin * MS_PER_MIN) / MS_PER_MIN);
     status.progress = (nowMs - startMin * MS_PER_MIN) / ((endMin - startMin) * MS_PER_MIN);
     status.warn = status.phase === "class" && status.remainingMin <= WARN_MINUTES;
     return status;
